@@ -94,7 +94,18 @@ function sqPos(square){
 /* pezzi: un elemento per casella occupata, animati via transform */
 const pieceEls = new Map(); // square -> element
 function pieceSVG(type, color){
-  return `<svg viewBox="0 0 45 45"><use href="#pc-${type}-${color}"/></svg>`;
+  // Colore applicato come attributi di presentazione sull'<use>: si ereditano
+  // dentro lo shadow tree del clone su tutti i browser (Safari/iOS compreso).
+  const fill   = color === 'w' ? 'url(#gw)' : 'url(#gb)';
+  const stroke = color === 'w' ? '#3A3128' : '#C9B896';
+  const sw     = color === 'w' ? '1.15' : '1.05';
+  // occhio del cavallo: scuro sul pezzo bianco (fallback), chiaro sul nero
+  const style  = color === 'w' ? '' : ' style="--pe:#C9B89699"';
+  return `<svg viewBox="0 0 45 45"${style}><use href="#sh-${type}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/></svg>`;
+}
+function setColorDots(my){
+  $('me-dot').className  = 'color-dot ' + my;
+  $('opp-dot').className = 'color-dot ' + (my === 'w' ? 'b' : 'w');
 }
 function placePiece(square, type, color, born = false){
   const el = document.createElement('div');
@@ -437,6 +448,7 @@ function startLocal(){
   S.mode = 'local'; S.flipped = false;
   $('opp-name').textContent = 'Nero';
   $('me-name').textContent = 'Bianco';
+  setColorDots('w');
   $('btn-undo').style.display = '';
   show('game'); freshBoard();
 }
@@ -450,6 +462,7 @@ function startAI(){
   const names = {1:'Apprendista', 2:'Stratega', 3:'Maestro'};
   $('opp-name').textContent = names[S.aiLevel];
   $('me-name').textContent = 'Tu';
+  setColorDots(S.myColor);
   $('btn-undo').style.display = '';
   show('game'); freshBoard();
   if (S.myColor === 'b'){ S.thinking = true; updateStatus(); setTimeout(aiTurn, 500); }
@@ -460,6 +473,7 @@ function startOnline(){
   S.flipped = !S.isHost;
   $('opp-name').textContent = 'Avversario';
   $('me-name').textContent = 'Tu';
+  setColorDots(S.myColor);
   $('btn-undo').style.display = 'none';
   show('game'); freshBoard();
   toast(S.isHost ? 'Avversario connesso. Hai il Bianco.' : 'Connesso. Hai il Nero.');

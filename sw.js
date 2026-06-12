@@ -1,5 +1,5 @@
 /* Scacco — service worker: app utilizzabile anche offline */
-const VERSION = 'scacco-v2';
+const VERSION = 'scacco-v3';
 const CORE = [
   './',
   './index.html',
