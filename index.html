@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Scacco — Scacchi eleganti, ovunque</title>
+<meta name="description" content="Gioco di scacchi gratuito: contro il dispositivo, contro un amico sullo stesso schermo o online con un invito.">
+<meta name="theme-color" content="#14110D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Scacco">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- ══════════ MENU PRINCIPALE ══════════ -->
+<section id="menu" class="screen active">
+  <div class="menu-inner">
+    <div class="crest" aria-hidden="true">
+      <svg viewBox="0 0 45 45" class="crest-piece"><use href="#pc-k-w"/></svg>
+    </div>
+    <h1 class="brand">Scacco</h1>
+    <p class="tagline">La partita ti aspetta.</p>
+
+    <nav class="menu-cards">
+      <button class="card" data-go="setup-ai">
+        <span class="card-glyph">♟</span>
+        <span class="card-text"><strong>Contro il dispositivo</strong><small>Tre livelli di gioco, anche offline</small></span>
+      </button>
+      <button class="card" data-go="local">
+        <span class="card-glyph">⚭</span>
+        <span class="card-text"><strong>Due giocatori qui</strong><small>Stesso schermo, a turni</small></span>
+      </button>
+      <button class="card" data-go="setup-online">
+        <span class="card-glyph">✉</span>
+        <span class="card-text"><strong>Sfida con invito</strong><small>Manda un link a chi vuoi</small></span>
+      </button>
+    </nav>
+    <p class="menu-foot">Gratuito · Senza pubblicità · Funziona offline</p>
+  </div>
+</section>
+
+<!-- ══════════ SETUP: CONTRO IA ══════════ -->
+<section id="setup-ai" class="screen">
+  <div class="setup-inner">
+    <button class="back" data-go="menu">‹ Indietro</button>
+    <h2>Contro il dispositivo</h2>
+
+    <h3 class="field-label">Livello</h3>
+    <div class="seg" id="seg-level">
+      <button data-level="1" class="on">Apprendista</button>
+      <button data-level="2">Stratega</button>
+      <button data-level="3">Maestro</button>
+    </div>
+
+    <h3 class="field-label">Giochi con</h3>
+    <div class="seg" id="seg-color">
+      <button data-color="w" class="on">Bianco</button>
+      <button data-color="random">Sorteggio</button>
+      <button data-color="b">Nero</button>
+    </div>
+
+    <button class="primary" id="start-ai">Inizia la partita</button>
+  </div>
+</section>
+
+<!-- ══════════ SETUP: ONLINE ══════════ -->
+<section id="setup-online" class="screen">
+  <div class="setup-inner">
+    <button class="back" data-go="menu">‹ Indietro</button>
+    <h2>Sfida con invito</h2>
+
+    <div class="online-block">
+      <h3 class="field-label">Crea una partita</h3>
+      <p class="hint">Ricevi un link da inviare. Chi lo apre gioca contro di te.</p>
+      <button class="primary" id="host-game">Crea e invita</button>
+      <div id="host-info" class="host-info" hidden>
+        <p class="room-label">Codice partita</p>
+        <p class="room-code" id="room-code">······</p>
+        <div class="row">
+          <button class="ghost" id="copy-link">Copia link</button>
+          <button class="ghost" id="share-link">Condividi…</button>
+        </div>
+        <p class="waiting" id="waiting-msg">In attesa dell'avversario…</p>
+      </div>
+    </div>
+
+    <div class="online-block">
+      <h3 class="field-label">Entra con un codice</h3>
+      <div class="row">
+        <input id="join-code" inputmode="latin" autocapitalize="characters" maxlength="6" placeholder="ABC123">
+        <button class="primary slim" id="join-game">Entra</button>
+      </div>
+    </div>
+    <p class="hint" id="online-status"></p>
+  </div>
+</section>
+
+<!-- ══════════ PARTITA ══════════ -->
+<section id="game" class="screen">
+  <header class="game-top">
+    <button class="back" id="leave-game">‹ Esci</button>
+    <div class="opp-tag">
+      <span id="opp-name">Avversario</span>
+      <span class="cap-tray" id="cap-by-opp"></span>
+    </div>
+  </header>
+
+  <div class="board-frame">
+    <div class="board-wrap" id="board-wrap">
+      <div class="squares" id="squares"></div>
+      <div class="pieces" id="pieces"></div>
+      <div class="coords files" id="coord-files"></div>
+      <div class="coords ranks" id="coord-ranks"></div>
+    </div>
+  </div>
+
+  <footer class="game-bottom">
+    <div class="me-tag">
+      <span id="me-name">Tu</span>
+      <span class="cap-tray" id="cap-by-me"></span>
+    </div>
+    <div class="status" id="status">Tocca a te</div>
+    <div class="game-actions">
+      <button class="ghost slim" id="btn-undo">↶ Annulla</button>
+      <button class="ghost slim" id="btn-flip">⇅ Ruota</button>
+      <button class="ghost slim" id="btn-moves">≡ Mosse</button>
+      <button class="ghost slim" id="btn-new">＋ Nuova</button>
+    </div>
+  </footer>
+
+  <aside class="moves-panel" id="moves-panel" hidden>
+    <div class="moves-head">
+      <span>Mosse</span><button class="ghost slim" id="close-moves">✕</button>
+    </div>
+    <ol class="moves-list" id="moves-list"></ol>
+  </aside>
+</section>
+
+<!-- ══════════ DIALOGHI ══════════ -->
+<div class="overlay" id="promo-overlay" hidden>
+  <div class="dialog">
+    <p class="dialog-title">Promuovi il pedone</p>
+    <div class="promo-row" id="promo-row"></div>
+  </div>
+</div>
+
+<div class="overlay" id="end-overlay" hidden>
+  <div class="dialog">
+    <p class="dialog-title" id="end-title">Scacco matto</p>
+    <p class="dialog-sub" id="end-sub"></p>
+    <div class="row center">
+      <button class="primary slim" id="end-rematch">Rivincita</button>
+      <button class="ghost slim" id="end-menu">Menu</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<!-- ══════════ DEFINIZIONI PEZZI SVG ══════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <linearGradient id="gw" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FBF6E9"/><stop offset="1" stop-color="#DECFAF"/>
+  </linearGradient>
+  <linearGradient id="gb" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3A3128"/><stop offset="1" stop-color="#191410"/>
+  </linearGradient>
+
+  <!-- base comune -->
+  <g id="base"><path d="M12 35 h21 a2.4 2.4 0 0 1 2.4 2.4 V39 h-25.8 v-1.6 A2.4 2.4 0 0 1 12 35 Z"/></g>
+
+  <g id="sh-p">
+    <circle cx="22.5" cy="12.5" r="5.2"/>
+    <path d="M22.5 16.5 C18.6 16.5 16.6 20.4 18.6 23.6 L16.2 33.5 H28.8 L26.4 23.6 C28.4 20.4 26.4 16.5 22.5 16.5 Z"/>
+    <use href="#base"/>
+  </g>
+  <g id="sh-r">
+    <path d="M14 10 h4.2 v3 h2.6 v-3 h3.4 v3 h2.6 v-3 H31 v7.4 l-2.6 2.6 v10.4 l2.6 2.6 H14 l2.6 -2.6 V20 L14 17.4 Z"/>
+    <use href="#base"/>
+  </g>
+  <g id="sh-n">
+    <path d="M15.2 35 c-.6 -5.4 0 -10.4 2 -15.2 l-4.6 2 c-.8 -3.2 .2 -6.4 2.4 -9.4 1.2 -1.6 1.6 -3.2 1.2 -5 3 -.6 5.8 .8 7 3.4 l3 -2.2 c1.2 3 .4 6 -1.6 8.2 4.2 3 6.2 7.4 6.2 13.2 v5 Z"/>
+    <circle cx="18.6" cy="15.4" r="1.15" fill="#000" opacity=".55"/>
+    <use href="#base"/>
+  </g>
+  <g id="sh-b">
+    <circle cx="22.5" cy="8.6" r="2.3"/>
+    <path d="M22.5 11.6 C17.2 15.4 15.6 20.8 17.8 25 L15.8 33.5 H29.2 L27.2 25 C29.4 20.8 27.8 15.4 22.5 11.6 Z"/>
+    <path d="M20.6 19.8 l3.8 -3.8" stroke-width="1.7" fill="none" stroke-linecap="round" class="slit"/>
+    <use href="#base"/>
+  </g>
+  <g id="sh-q">
+    <circle cx="14.2" cy="10.6" r="1.9"/><circle cx="22.5" cy="8" r="1.9"/><circle cx="30.8" cy="10.6" r="1.9"/>
+    <path d="M14.4 13 L17.6 27 L15.8 33.5 H29.2 L27.4 27 L30.6 13 L26.2 20.6 L22.5 11 L18.8 20.6 Z"/>
+    <use href="#base"/>
+  </g>
+  <g id="sh-k">
+    <path d="M21.3 4.4 h2.4 v3.2 H27 v2.4 h-3.3 v3.4 h-2.4 V10 H18 V7.6 h3.3 Z"/>
+    <path d="M15.6 33.5 L14.6 26.4 C13.2 21 17 16.4 22.5 16.4 C28 16.4 31.8 21 30.4 26.4 L29.4 33.5 Z"/>
+    <use href="#base"/>
+  </g>
+
+  <g id="pc-p-w" class="pw"><use href="#sh-p"/></g><g id="pc-p-b" class="pb"><use href="#sh-p"/></g>
+  <g id="pc-r-w" class="pw"><use href="#sh-r"/></g><g id="pc-r-b" class="pb"><use href="#sh-r"/></g>
+  <g id="pc-n-w" class="pw"><use href="#sh-n"/></g><g id="pc-n-b" class="pb"><use href="#sh-n"/></g>
+  <g id="pc-b-w" class="pw"><use href="#sh-b"/></g><g id="pc-b-b" class="pb"><use href="#sh-b"/></g>
+  <g id="pc-q-w" class="pw"><use href="#sh-q"/></g><g id="pc-q-b" class="pb"><use href="#sh-q"/></g>
+  <g id="pc-k-w" class="pw"><use href="#sh-k"/></g><g id="pc-k-b" class="pb"><use href="#sh-k"/></g>
+</defs>
+</svg>
+
+</body>
+</html>

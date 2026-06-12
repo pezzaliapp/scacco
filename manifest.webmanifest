@@ -1,0 +1,19 @@
+{
+  "name": "Scacco — Scacchi eleganti",
+  "short_name": "Scacco",
+  "description": "Gioco di scacchi gratuito: contro il dispositivo, in due sullo stesso schermo o online con un invito.",
+  "id": "/?source=pwa",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14110D",
+  "theme_color": "#14110D",
+  "lang": "it",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
